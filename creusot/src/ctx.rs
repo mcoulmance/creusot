@@ -2,10 +2,11 @@ use crate::{
     backend::resolve::is_resolve_trivial,
     callbacks,
     contracts_items::{
-        Intrinsic, creusot_clause_attrs, gather_intrinsics, get_creusot_item, is_extern_spec,
-        is_extern_type, is_logic, is_opaque, is_open_inv_param, is_prophetic, is_trusted,
-        opacity_witness_name,
+        Intrinsic, creusot_clause_attrs, gather_intrinsics, get_creusot_item, has_logic_alias,
+        is_extern_spec, is_extern_type, is_logic, is_opaque, is_open_inv_param, is_prophetic,
+        is_trusted, opacity_witness_name,
     },
+    logic_alias,
     metadata::{BinaryMetadata, Metadata, encode_def_ids, get_erasure_required},
     naming::{ComaNames, ModulePath, lowercase_prefix},
     translation::{
@@ -198,6 +199,8 @@ pub struct TranslationCtx<'tcx> {
     crate_name: OnceCell<why3::Symbol>,
     inhabited_ty: RefCell<HashMap<Ty<'tcx>, bool>>,
     nonzero_sized_ty: RefCell<HashMap<Ty<'tcx>, bool>>,
+    /// TODO(mael): document this
+    logic_aliases: HashMap<DefId, (Span, DefId)>,
 }
 
 impl<'tcx> Deref for TranslationCtx<'tcx> {
@@ -308,6 +311,7 @@ impl<'tcx> TranslationCtx<'tcx> {
             crate_name: Default::default(),
             nonzero_sized_ty: Default::default(),
             inhabited_ty: Default::default(),
+            logic_aliases: Default::default(),
         }
     }
 
@@ -540,6 +544,10 @@ impl<'tcx> TranslationCtx<'tcx> {
         self.creusot_items.get(&name).cloned().or_else(|| self.externs.creusot_item(name))
     }
 
+    pub(crate) fn logic_alias(&self, def_id: DefId) -> Option<(Span, DefId)> {
+        self.logic_aliases.get(&def_id).copied()
+    }
+
     pub(crate) fn param_env(&self, def_id: DefId) -> ParamEnv<'tcx> {
         if let Some((es, subst)) = self
             .extern_spec(def_id)
@@ -597,6 +605,7 @@ impl<'tcx> TranslationCtx<'tcx> {
         self.load_extern_specs();
         self.load_trusted_positivity();
         self.load_erasures();
+        self.load_logic_aliases();
     }
 
     fn load_extern_specs(&mut self) {
@@ -710,6 +719,21 @@ impl<'tcx> TranslationCtx<'tcx> {
             if let Some(erasure) = extract_erasure_from_child(self, def_id) {
                 self.erased_local_defid.insert(def_id, Some(erasure));
                 self.erasures_to_check.insert(def_id);
+            }
+        }
+    }
+
+    fn load_logic_aliases(&mut self) {
+        for id in self.hir_crate_items(()).definitions() {
+            let def_id = id.to_def_id();
+
+            if let Some(alias) = has_logic_alias(self, def_id) {
+                trace!(
+                    "\t`{}` is an alias for `{}`",
+                    self.def_path_str(def_id),
+                    self.def_path_str(logic_alias::get_logic_id(self, alias.1)),
+                );
+                self.logic_aliases.insert(def_id, alias);
             }
         }
     }

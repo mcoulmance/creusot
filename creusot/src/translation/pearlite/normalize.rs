@@ -1,6 +1,7 @@
 use crate::{
     contracts_items::{Intrinsic, get_builtin},
     ctx::{HasTyCtxt as _, TranslationCtx},
+    logic_alias,
     resolution::TraitResolved,
     translation::pearlite::{
         BinOp, Literal, Term, TermKind, UnOp,
@@ -45,8 +46,23 @@ impl<'a, 'tcx> TermVisitorMut<'tcx> for NormalizeTerm<'a, 'tcx> {
                     )
                 };
                 (*id, *subst) = resolved;
-                term.kind =
-                    optimize_builtin(self.ctx, *id, subst, std::mem::replace(args, Box::new([])));
+                if let Some((id, mut args, subst)) =
+                    logic_alias::subst_call(self.ctx, *id, args.clone())
+                {
+                    term.kind = optimize_builtin(
+                        self.ctx,
+                        id,
+                        subst,
+                        std::mem::replace(&mut args, Box::new([])),
+                    )
+                } else {
+                    term.kind = optimize_builtin(
+                        self.ctx,
+                        *id,
+                        subst,
+                        std::mem::replace(args, Box::new([])),
+                    );
+                }
             }
             _ => {}
         }
