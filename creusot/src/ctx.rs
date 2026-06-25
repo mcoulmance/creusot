@@ -734,6 +734,26 @@ impl<'tcx> TranslationCtx<'tcx> {
                     self.def_path_str(logic_alias::get_logic_id(self, alias.1)),
                 );
                 self.logic_aliases.insert(def_id, alias);
+            } else if let Some(trait_id) = self.tcx.trait_item_of(def_id)
+                && let Some(alias) = has_logic_alias(self, trait_id)
+            {
+                let sp = alias
+                    .0
+                    .find_ancestor_not_from_macro()
+                    .unwrap_or(alias.0)
+                    .to(self.def_span(trait_id));
+                let sid = self.def_span(def_id);
+                let mut err = self
+                    .dcx()
+                    .struct_span_err(sid, "Implicit logic alias in trait impl is not supported");
+                err.span_note(sp, "Trait item has a `#[logic_alias]` attribute");
+                err.span_suggestion_hidden(
+                    sid,
+                    "Trait item and Impl item must have the same `#[logic_alias]` attribute",
+                    "",
+                    rustc_errors::Applicability::MachineApplicable,
+                );
+                err.emit();
             }
         }
     }
