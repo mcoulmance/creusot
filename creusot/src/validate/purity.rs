@@ -143,6 +143,26 @@ pub(crate) fn validate_purity<'tcx>(
         .emit();
         return;
     }
+    if let Some((span, alias_id)) = ctx.logic_alias(def_id) {
+        if is_logic(ctx.tcx, def_id) {
+            ctx.dcx()
+                .struct_span_err(
+                    ctx.def_ident_span(def_id).unwrap_or_default(),
+                    "Only program functions can use `#[logic_alias]`",
+                )
+                .with_span_label(span, "alias defined here")
+                .emit()
+                .raise_fatal();
+        }
+        let logic_id = logic_alias::get_logic_id(ctx, alias_id);
+        if !is_logic(ctx.tcx, logic_id) {
+            ctx.dcx()
+                .struct_span_err(span, "Only logic functions can be aliased")
+                .with_note(format!("`{}` is not a logic function", ctx.def_path_str(logic_id)))
+                .emit()
+                .raise_fatal();
+        }
+    }
     let typing_env = ctx.typing_env(def_id);
     PurityVisitor { ctx, thir, context: LocalPurity::of_def_id(ctx, def_id), typing_env }
         .visit_expr(&thir[expr]);
@@ -274,7 +294,6 @@ impl<'a, 'tcx> Visitor<'a, 'tcx> for PurityVisitor<'a, 'tcx> {
                     let fn_purity = self.purity(func_did, args);
                     let fn_purity = match self.ctx.logic_alias(func_did) {
                         Some((_, alias_id)) if !self.context.can_call(fn_purity) => {
-                            // TODO MAEL println!("Found logic_alias: {:?}", alias_id);
                             self.purity(logic_alias::get_logic_id(self.ctx, alias_id), args)
                         }
                         _ => fn_purity,
