@@ -159,6 +159,10 @@ module M_is_sorted
     forall i: int, j: int. start <= i /\ i < j /\ j < end'
       -> Int32.to_int (Seq.get elems i) <= Int32.to_int (Seq.get elems j)
   
+  predicate gt_log_Int [@inline:trivial] (self: int) (other: int) = other < self
+  
+  meta "rewrite_def" predicate gt_log_Int
+  
   predicate in_bounds_usize [@inline:trivial] (self: UInt64.t) (seq: Seq.seq Int32.t) =
     UInt64.t'int self < Seq.length seq
   
@@ -188,7 +192,8 @@ module M_is_sorted
     | bb2 = s0 [ s0 = [ &_ret <- true ] s1 | s1 = return {_ret} ]
     | bb3 = s0 [ s0 = [ &i <- (1: UInt64.t) ] s1 | s1 = bb4 ]
     | bb4 = bb4
-      [ bb4 = {[@expl:loop invariant] is_sorted (view_Vec_i32_Global data) 0 (UInt64.t'int i) /\ UInt64.t'int i > 0}
+      [ bb4 = {[@expl:loop invariant] is_sorted (view_Vec_i32_Global data) 0 (UInt64.t'int i)
+        /\ gt_log_Int (UInt64.t'int i) 0}
         (! s0)
         [ s0 = len_i32 {data} (fun (_x: UInt64.t) -> [ &_18 <- _x ] s1)
         | s1 = [ &_16 <- UInt64.lt i _18 ] s2
