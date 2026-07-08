@@ -8,7 +8,7 @@ use crate::{
         pretyping,
     },
 };
-use pearlite_syn::{EnsuresTerm, Term, TermCall, TermPath};
+use pearlite_syn::{EnsuresTerm, Term, TermPath};
 use proc_macro::TokenStream as TS1;
 use proc_macro2::{Span, TokenStream};
 use quote::{quote, quote_spanned};
@@ -286,34 +286,39 @@ pub fn bitwise_proof(_: TS1, tokens: TS1) -> TS1 {
 
 pub fn logic_alias(attr: TS1, tokens: TS1) -> TS1 {
     let ensures_contract = {
-        if let Ok(logic_path) = syn::parse::<TermPath>(attr.clone()) {
-            let tokens = tokens.clone();
-            let func = parse_macro_input!(tokens as FnOrMethod);
+        match syn::parse::<Term>(attr.clone()) {
+            Ok(Term::Path(logic_path)) => {
+                let tokens = tokens.clone();
+                let func = parse_macro_input!(tokens as FnOrMethod);
 
-            /* TODO: check if these are terms */
-            let args = func.sig.inputs.iter().map(|a| match a {
-                syn::FnArg::Receiver(receiver) => {
-                    let self_t = receiver.self_token;
-                    quote!(#self_t)
-                }
-                syn::FnArg::Typed(pat_type) => {
-                    let pat = &pat_type.pat;
-                    quote!(#pat)
-                }
-            });
-            quote!(result == #logic_path(#(#args), *)).into()
-        } else {
-            match syn::parse::<TermCall>(attr.clone()) {
-                Ok(term_call) => {
-                    quote!(result == #term_call)
-                }
-                Err(err) => {
-                    return syn::Error::new(
-                        err.span(),
-                        "`logic_alias` should contain a path to a logic function with the same signature, or \
-                        a logic function call with same return type"
-                    ).to_compile_error().into();
-                }
+                let args = func.sig.inputs.iter().map(|a| match a {
+                    syn::FnArg::Receiver(receiver) => {
+                        let self_t = receiver.self_token;
+                        quote!(#self_t)
+                    }
+                    syn::FnArg::Typed(pat_type) => {
+                        let pat = &pat_type.pat;
+                        quote!(#pat)
+                    }
+                });
+                quote!(result == #logic_path(#(#args), *)).into()
+            }
+            Ok(Term::Call(term_call)) => {
+                quote!(result == #term_call)
+            }
+            Ok(invalid_term) => {
+                return syn::Error::new(
+                   invalid_term.span(),
+                   "`logic_alias` should contain a path to a logic function with the same signature, or \
+                   a logic function call with same return type"
+               ).to_compile_error().into();
+            }
+            Err(err) => {
+                return syn::Error::new(
+                    err.span(),
+                    "`logic_alias` should contain a path to a logic function with the same signature, or \
+                    a logic function call with same return type"
+                ).to_compile_error().into();
             }
         }
     };
