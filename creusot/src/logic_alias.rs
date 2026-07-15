@@ -10,7 +10,7 @@ use rustc_span::Span;
 use rustc_type_ir::GenericArgKind;
 
 pub(crate) fn get_logic_id(ctx: &TranslationCtx, def_id: DefId) -> DefId {
-    let ensures_body = ctx.term(def_id).expect("no ensures clause associated with this alias");
+    let ensures_body = ctx.raw_term(def_id).expect("no ensures clause associated with this alias");
 
     match &ensures_body.1.kind {
         TermKind::Binary { rhs, .. } => match &rhs.kind {
@@ -31,7 +31,7 @@ where
 {
     if let Some((_, alias_id)) = ctx.logic_alias(prog_id) {
         let ensures_body =
-            ctx.term(alias_id).expect("no ensures clause associated with this alias");
+            ctx.raw_term(alias_id).expect("no ensures clause associated with this alias");
         match &ensures_body.1.kind {
             TermKind::Binary { rhs, .. } => match &rhs.kind {
                 TermKind::Call { id, args, subst: call_subst } => {

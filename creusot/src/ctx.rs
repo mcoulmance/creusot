@@ -194,6 +194,8 @@ pub struct TranslationCtx<'tcx> {
     trait_impl: OnceMap<DefId, Vec<Refinement<'tcx>>>,
     sig: OnceMap<DefId, Box<PreSignature<'tcx>>>,
     opacity: OnceMap<DefId, Box<Opacity>>,
+    /// This is used for logic aliases, see `Self::raw_term(...)`
+    raw_terms: OnceMap<DefId, Box<Option<Scoped<Term<'tcx>>>>>,
     renamer: RefCell<HashMap<HirId, Ident>>,
     pub corenamer: RefCell<HashMap<Ident, HirId>>,
     crate_name: OnceCell<why3::Symbol>,
@@ -306,6 +308,7 @@ impl<'tcx> TranslationCtx<'tcx> {
             sig: Default::default(),
             opacity: Default::default(),
             params_open_inv,
+            raw_terms: Default::default(),
             renamer: Default::default(),
             corenamer: Default::default(),
             crate_name: Default::default(),
@@ -368,6 +371,32 @@ impl<'tcx> TranslationCtx<'tcx> {
                         bound,
                         pearlite::normalize(self, self.typing_env(def_id), term),
                     )))
+                } else {
+                    Box::new(None)
+                }
+            })
+            .as_ref()
+    }
+
+    /// Same as `Self::term`, but does not normalize term.
+    /// This is used for logic aliases, since we do not want our alias closure to be
+    /// optimized out (e.g. builtin("identity") replaces the call to the logic function
+    /// by `self`, which breaks the aliasing machinery).
+    /// For any other purpose you probably want to use `Self::term` instead.
+    pub(crate) fn raw_term<'a>(&'a self, def_id: DefId) -> Option<&'a Scoped<Term<'tcx>>> {
+        let Some(local_id) = def_id.as_local() else {
+            return self.externs.term(def_id);
+        };
+
+        self.raw_terms
+            .insert(def_id, |_| {
+                if self.tcx.hir_maybe_body_owned_by(local_id).is_some() {
+                    let (bound, term) = match pearlite::from_thir(self, local_id) {
+                        Ok(t) => t,
+                        Err(err) => err.raise_fatal(),
+                    };
+                    let bound = bound.iter().map(|b| b.0).collect();
+                    Box::new(Some(Scoped(bound, term)))
                 } else {
                     Box::new(None)
                 }
