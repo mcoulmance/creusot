@@ -510,11 +510,15 @@ module M_ghost__impl_Clone_for_Ghost_T__clone (* <ghost::Ghost<T> as std::clone:
       /\ ([@stop_split] [@expl:deref ensures] result = self)}
       (! return {result}) ]
   
-  let new_T (x: t_T) (return (x'0: t_T)) = {[@stop_split] [@expl:new 'x' type invariant] inv_T x}
+  function new_T (x: t_T) : t_T
+  
+  axiom new_T_spec: forall x: t_T [new_T x]. new_T x = x
+  
+  let new_T'0 (x: t_T) (return (x'0: t_T)) = {[@stop_split] [@expl:new 'x' type invariant] inv_T x}
     any
     [ return (result: t_T) ->
     {[@stop_split] [@expl:new_T ensures] ([@stop_split] [@expl:new result type invariant] inv_Ghost_T result)
-      /\ ([@stop_split] [@expl:new ensures] result = x)}
+      /\ ([@stop_split] [@expl:new ensures] result = new_T x)}
       (! return {result}) ]
   
   meta "compute_max_steps" 1000000
@@ -526,7 +530,7 @@ module M_ghost__impl_Clone_for_Ghost_T__clone (* <ghost::Ghost<T> as std::clone:
     (! bb0
     [ bb0 = s0
       [ s0 = deref_Ghost_T {self} (fun (_x: t_T) -> [ &_5 <- _x ] s1)
-      | s1 = new_T {_5} (fun (_x: t_T) -> [ &_ret <- _x ] s2)
+      | s1 = new_T'0 {_5} (fun (_x: t_T) -> [ &_ret <- _x ] s2)
       | s2 = return {_ret} ] ] [ & _ret: t_T = Any.any_l () | & self: t_T = self | & _5: t_T = Any.any_l () ])
     [ return (result: t_T) ->
     {[@stop_split] [@expl:clone_Ghost_T ensures] ([@stop_split] [@expl:clone result type invariant] inv_Ghost_T result)
@@ -860,12 +864,16 @@ module M_ghost__invariant__impl_NonAtomicInvariantExt_for_Ghost_ref_T__open (* <
   
   meta "rewrite_def" predicate inv_Ghost_ref_Target
   
-  let new_ref_Target (x: t_Target) (return (x'0: t_Target)) =
+  function new_ref_Target (x: t_Target) : t_Target
+  
+  axiom new_ref_Target_spec: forall x: t_Target [new_ref_Target x]. new_ref_Target x = x
+  
+  let new_ref_Target'0 (x: t_Target) (return (x'0: t_Target)) =
   {[@stop_split] [@expl:new 'x' type invariant] inv_ref_Target x}
     any
     [ return (result: t_Target) ->
     {[@stop_split] [@expl:new_ref_Target ensures] ([@stop_split] [@expl:new result type invariant] inv_Ghost_ref_Target result)
-      /\ ([@stop_split] [@expl:new ensures] result = x)}
+      /\ ([@stop_split] [@expl:new ensures] result = new_ref_Target x)}
       (! return {result}) ]
   
   type t_Tokens
@@ -905,10 +913,6 @@ module M_ghost__invariant__impl_NonAtomicInvariantExt_for_Ghost_ref_T__open (* <
   
   predicate inv_F (_1: t_F)
   
-  function new_ref_Target'0 (x: t_Target) : t_Target
-  
-  axiom new_ref_Target_spec: forall x: t_Target [new_ref_Target'0 x]. new_ref_Target'0 x = x
-  
   meta "compute_max_steps" 1000000
   
   meta "select_lsinst" "all"
@@ -918,13 +922,13 @@ module M_ghost__invariant__impl_NonAtomicInvariantExt_for_Ghost_ref_T__open (* <
     /\ ([@stop_split] [@expl:open 'f' type invariant] inv_F f)
     /\ ([@stop_split] [@expl:open requires #0] precondition_deref () self)
     /\ ([@stop_split] [@expl:open requires #1] forall this: t_Target. postcondition_deref () self this
-      -> precondition_open () { f0 = new_ref_Target'0 this; f1 = tokens; f2 = f })}
+      -> precondition_open () { f0 = new_ref_Target this; f1 = tokens; f2 = f })}
     (! bb0
     [ bb0 = s0
       [ s0 = [ &_20 <- self ] s1
       | s1 = deref_Ghost_ref_T {_20} (fun (_x: t_T) -> [ &_18 <- _x ] s2)
       | s2 = deref_T {_18} (fun (_x: t_Target) -> [ &_16 <- _x ] s3)
-      | s3 = new_ref_Target {_16} (fun (_x: t_Target) -> [ &this <- _x ] s4)
+      | s3 = new_ref_Target'0 {_16} (fun (_x: t_Target) -> [ &this <- _x ] s4)
       | s4 = open_Ghost_ref_Target {this} {tokens} {f} (fun (_x: t_A) -> [ &_ret <- _x ] s5)
       | s5 = return {_ret} ] ]
     [ & _ret: t_A = Any.any_l ()
@@ -938,7 +942,7 @@ module M_ghost__invariant__impl_NonAtomicInvariantExt_for_Ghost_ref_T__open (* <
     [ return (result: t_A) ->
     {[@stop_split] [@expl:open_Ghost_ref_T ensures] ([@stop_split] [@expl:open result type invariant] inv_A result)
       /\ ([@stop_split] [@expl:open ensures] exists this: t_Target. postcondition_deref () self this
-        /\ postcondition_open () { f0 = new_ref_Target'0 this; f1 = tokens; f2 = f } result)}
+        /\ postcondition_open () { f0 = new_ref_Target this; f1 = tokens; f2 = f } result)}
       (! return {result}) ]
 end
 module M_ghost__invariant__impl_NonAtomicInvariantExt_for_ref_Ghost_L__open (* <&'a ghost::Ghost<L> as ghost::invariant::NonAtomicInvariantExt<'a>> *)
@@ -1283,8 +1287,15 @@ module M_ghost__lifetime_logic__impl_LifetimeToken__join (* ghost::lifetime_logi
       = op_PositiveReal (view_Resource_PositiveReal self) (view_Resource_PositiveReal other))}
       (! return {result}) ]
   
-  let new_Resource_PositiveReal (x: t_Resource_PositiveReal) (return (x'0: t_Resource_PositiveReal)) = any
-    [ return (result: t_Resource_PositiveReal) -> {[@stop_split] [@expl:new ensures] result = x} (! return {result}) ]
+  function new_Resource_PositiveReal (x: t_Resource_PositiveReal) : t_Resource_PositiveReal
+  
+  axiom new_Resource_PositiveReal_spec:
+    forall x: t_Resource_PositiveReal [new_Resource_PositiveReal x]. new_Resource_PositiveReal x = x
+  
+  let new_Resource_PositiveReal'0 (x: t_Resource_PositiveReal) (return (x'0: t_Resource_PositiveReal)) = any
+    [ return (result: t_Resource_PositiveReal) -> {[@stop_split] [@expl:new ensures] result
+      = new_Resource_PositiveReal x}
+      (! return {result}) ]
   
   type t_Lifetime = { f0'0: t_Id }
   
@@ -1303,7 +1314,7 @@ module M_ghost__lifetime_logic__impl_LifetimeToken__join (* ghost::lifetime_logi
       [ s0 = into_inner_Resource_PositiveReal {self.f0} (fun (_x: t_Resource_PositiveReal) -> [ &_13 <- _x ] s1)
       | s1 = into_inner_Resource_PositiveReal {other.f0} (fun (_x: t_Resource_PositiveReal) -> [ &_15 <- _x ] s2)
       | s2 = join_PositiveReal {_13} {_15} (fun (_x: t_Resource_PositiveReal) -> [ &_12 <- _x ] s3)
-      | s3 = new_Resource_PositiveReal {_12} (fun (_x: t_Resource_PositiveReal) -> [ &_11 <- _x ] s4)
+      | s3 = new_Resource_PositiveReal'0 {_12} (fun (_x: t_Resource_PositiveReal) -> [ &_11 <- _x ] s4)
       | s4 = [ &_ret <- { f0 = _11 } ] s5
       | s5 = return {_ret} ] ]
     [ & _ret: t_LifetimeToken = Any.any_l ()
@@ -1399,8 +1410,12 @@ module M_ghost__lifetime_logic__impl_LifetimeToken__join_in (* ghost::lifetime_l
   
   meta "rewrite_def" predicate resolve_refmut_LifetimeToken
   
-  let new_unit (x: ()) (return (x'0: ())) = any
-    [ return (result: ()) -> {[@stop_split] [@expl:new ensures] result = x} (! return {result}) ]
+  function new_unit (x: ()) : ()
+  
+  axiom new_unit_spec: forall x: () [new_unit x]. new_unit x = x
+  
+  let new_unit'0 (x: ()) (return (x'0: ())) = any
+    [ return (result: ()) -> {[@stop_split] [@expl:new ensures] result = new_unit x} (! return {result}) ]
   
   type t_Lifetime = { f0'0: t_Id }
   
@@ -1429,7 +1444,7 @@ module M_ghost__lifetime_logic__impl_LifetimeToken__join_in (* ghost::lifetime_l
       | s4 = join_in_PositiveReal {_13} {_16} (fun (_x: ()) -> [ &_12 <- _x ] s5)
       | s5 = -{resolve_refmut_Resource_PositiveReal _14}- s6
       | s6 = -{resolve_refmut_LifetimeToken self}- s7
-      | s7 = new_unit {_12} (fun (_x: ()) -> [ &_11 <- _x ] s8)
+      | s7 = new_unit'0 {_12} (fun (_x: ()) -> [ &_11 <- _x ] s8)
       | s8 = return {_ret} ] ]
     [ & _ret: () = Any.any_l ()
     | & self: MutBorrow.t t_LifetimeToken = self
@@ -1643,10 +1658,16 @@ module M_ghost__lifetime_logic__impl_LifetimeToken__split (* ghost::lifetime_log
       /\ ([@stop_split] [@expl:split ensures #2] view_Resource_PositiveReal result.f1'0 = b)}
       (! return {result}) ]
   
-  let new_tup2_Resource_PositiveReal_Resource_PositiveReal (x: tup2_Resource_PositiveReal_Resource_PositiveReal)
+  function new_tup2_Resource_PositiveReal_Resource_PositiveReal (x: tup2_Resource_PositiveReal_Resource_PositiveReal) : tup2_Resource_PositiveReal_Resource_PositiveReal
+  
+  axiom new_tup2_Resource_PositiveReal_Resource_PositiveReal_spec:
+    forall x: tup2_Resource_PositiveReal_Resource_PositiveReal [new_tup2_Resource_PositiveReal_Resource_PositiveReal x]. new_tup2_Resource_PositiveReal_Resource_PositiveReal x
+      = x
+  
+  let new_tup2_Resource_PositiveReal_Resource_PositiveReal'0 (x: tup2_Resource_PositiveReal_Resource_PositiveReal)
     (return (x'0: tup2_Resource_PositiveReal_Resource_PositiveReal)) = any
     [ return (result: tup2_Resource_PositiveReal_Resource_PositiveReal) -> {[@stop_split] [@expl:new ensures] result
-      = x}
+      = new_tup2_Resource_PositiveReal_Resource_PositiveReal x}
       (! return {result}) ]
   
   type tup2_Ghost_Resource_PositiveReal_Ghost_Resource_PositiveReal = {
@@ -1677,7 +1698,7 @@ module M_ghost__lifetime_logic__impl_LifetimeToken__split (* ghost::lifetime_log
       | s1 = into_inner_Resource_PositiveReal {self.f0} (fun (_x: t_Resource_PositiveReal) -> [ &_16 <- _x ] s2)
       | s2 = split_PositiveReal {_16} {q} {q}
           (fun (_x: tup2_Resource_PositiveReal_Resource_PositiveReal) -> [ &_12 <- _x ] s3)
-      | s3 = new_tup2_Resource_PositiveReal_Resource_PositiveReal {_12}
+      | s3 = new_tup2_Resource_PositiveReal_Resource_PositiveReal'0 {_12}
           (fun (_x: tup2_Resource_PositiveReal_Resource_PositiveReal) -> [ &_11 <- _x ] s4)
       | s4 = split_Resource_PositiveReal {_11}
           (fun (_x: tup2_Ghost_Resource_PositiveReal_Ghost_Resource_PositiveReal) -> [ &_10 <- _x ] s5)
@@ -1853,8 +1874,15 @@ module M_ghost__lifetime_logic__impl_LifetimeToken__split_off (* ghost::lifetime
   
   meta "rewrite_def" predicate resolve_refmut_LifetimeToken
   
-  let new_Resource_PositiveReal (x: t_Resource_PositiveReal) (return (x'0: t_Resource_PositiveReal)) = any
-    [ return (result: t_Resource_PositiveReal) -> {[@stop_split] [@expl:new ensures] result = x} (! return {result}) ]
+  function new_Resource_PositiveReal (x: t_Resource_PositiveReal) : t_Resource_PositiveReal
+  
+  axiom new_Resource_PositiveReal_spec:
+    forall x: t_Resource_PositiveReal [new_Resource_PositiveReal x]. new_Resource_PositiveReal x = x
+  
+  let new_Resource_PositiveReal'0 (x: t_Resource_PositiveReal) (return (x'0: t_Resource_PositiveReal)) = any
+    [ return (result: t_Resource_PositiveReal) -> {[@stop_split] [@expl:new ensures] result
+      = new_Resource_PositiveReal x}
+      (! return {result}) ]
   
   type t_Lifetime = { f0'0: t_Id }
   
@@ -1879,7 +1907,7 @@ module M_ghost__lifetime_logic__impl_LifetimeToken__split_off (* ghost::lifetime
       | s4 = split_off_PositiveReal {_13} {half} {half} (fun (_x: t_Resource_PositiveReal) -> [ &_9 <- _x ] s5)
       | s5 = -{resolve_refmut_Resource_PositiveReal _14}- s6
       | s6 = -{resolve_refmut_LifetimeToken self}- s7
-      | s7 = new_Resource_PositiveReal {_9} (fun (_x: t_Resource_PositiveReal) -> [ &_8 <- _x ] s8)
+      | s7 = new_Resource_PositiveReal'0 {_9} (fun (_x: t_Resource_PositiveReal) -> [ &_8 <- _x ] s8)
       | s8 = [ &_ret <- { f0 = _8 } ] s9
       | s9 = return {_ret} ] ]
     [ & _ret: t_LifetimeToken = Any.any_l ()
@@ -1916,8 +1944,12 @@ module M_ghost__lifetime_logic__impl_Plain_for_Lifetime__into_ghost (* <ghost::l
   let into_inner_Id (self: t_Id) (return (x: t_Id)) = any
     [ return (result: t_Id) -> {[@stop_split] [@expl:into_inner ensures] result = self} (! return {result}) ]
   
-  let new_Lifetime (x: t_Lifetime) (return (x'0: t_Lifetime)) = any
-    [ return (result: t_Lifetime) -> {[@stop_split] [@expl:new ensures] result = x} (! return {result}) ]
+  function new_Lifetime (x: t_Lifetime) : t_Lifetime
+  
+  axiom new_Lifetime_spec: forall x: t_Lifetime [new_Lifetime x]. new_Lifetime x = x
+  
+  let new_Lifetime'0 (x: t_Lifetime) (return (x'0: t_Lifetime)) = any
+    [ return (result: t_Lifetime) -> {[@stop_split] [@expl:new ensures] result = new_Lifetime x} (! return {result}) ]
   
   meta "compute_max_steps" 1000000
   
@@ -1929,7 +1961,7 @@ module M_ghost__lifetime_logic__impl_Plain_for_Lifetime__into_ghost (* <ghost::l
       | s1 = into_ghost_Id {s} (fun (_x: t_Id) -> [ &_9 <- _x ] s2)
       | s2 = into_inner_Id {_9} (fun (_x: t_Id) -> [ &_8 <- _x ] s3)
       | s3 = [ &_7 <- { f0 = _8 } ] s4
-      | s4 = new_Lifetime {_7} (fun (_x: t_Lifetime) -> [ &_ret <- _x ] s5)
+      | s4 = new_Lifetime'0 {_7} (fun (_x: t_Lifetime) -> [ &_ret <- _x ] s5)
       | s5 = return {_ret} ] ]
     [ & _ret: t_Lifetime = Any.any_l ()
     | & snap: t_Lifetime = snap
@@ -2392,12 +2424,16 @@ module M_ghost__resource__auth__impl_Authority_R__alloc (* ghost::resource::auth
   
   meta "rewrite_def" predicate inv_Ghost_Authority_R
   
-  let new_Authority_R (x: t_Authority_R) (return (x'0: t_Authority_R)) =
+  function new_Authority_R (x: t_Authority_R) : t_Authority_R
+  
+  axiom new_Authority_R_spec: forall x: t_Authority_R [new_Authority_R x]. new_Authority_R x = x
+  
+  let new_Authority_R'0 (x: t_Authority_R) (return (x'0: t_Authority_R)) =
   {[@stop_split] [@expl:new 'x' type invariant] inv_Authority_R x}
     any
     [ return (result: t_Authority_R) ->
     {[@stop_split] [@expl:new_Authority_R ensures] ([@stop_split] [@expl:new result type invariant] inv_Ghost_Authority_R result)
-      /\ ([@stop_split] [@expl:new ensures] result = x)}
+      /\ ([@stop_split] [@expl:new ensures] result = new_Authority_R x)}
       (! return {result}) ]
   
   constant any_R : t_R
@@ -2420,7 +2456,7 @@ module M_ghost__resource__auth__impl_Authority_R__alloc (* ghost::resource::auth
           (fun (_x: t_Resource_View_AuthViewRel_R) -> [ &_4 <- _x ] s1)
       | s1 = into_inner_Resource_View_AuthViewRel_R {_4} (fun (_x: t_Resource_View_AuthViewRel_R) -> [ &_3 <- _x ] s2)
       | s2 = [ &_2 <- { f0 = _3 } ] s3
-      | s3 = new_Authority_R {_2} (fun (_x: t_Authority_R) -> [ &_ret <- _x ] s4)
+      | s3 = new_Authority_R'0 {_2} (fun (_x: t_Authority_R) -> [ &_ret <- _x ] s4)
       | s4 = return {_ret} ] ]
     [ & _ret: t_Authority_R = Any.any_l ()
     | & _2: t_Authority_R = Any.any_l ()
@@ -11033,8 +11069,12 @@ module M_logic__int__impl_Plain_for_Nat__into_ghost (* <logic::int::Nat as ghost
     [ return (result: t_Subset_NatInner) -> {[@stop_split] [@expl:new ensures] result = new_NatInner x}
       (! return {result}) ]
   
-  let new_Nat (x: t_Nat) (return (x'0: t_Nat)) = any
-    [ return (result: t_Nat) -> {[@stop_split] [@expl:new ensures] result = x} (! return {result}) ]
+  function new_Nat (x: t_Nat) : t_Nat
+  
+  axiom new_Nat_spec: forall x: t_Nat [new_Nat x]. new_Nat x = x
+  
+  let new_Nat'0 (x: t_Nat) (return (x'0: t_Nat)) = any
+    [ return (result: t_Nat) -> {[@stop_split] [@expl:new ensures] result = new_Nat x} (! return {result}) ]
   
   meta "compute_max_steps" 1000000
   
@@ -11049,7 +11089,7 @@ module M_logic__int__impl_Plain_for_Nat__into_ghost (* <logic::int::Nat as ghost
       | s4 = [ &_11 <- { f0'0 = _12 } ] s5
       | s5 = new_NatInner'0 {_11} (fun (_x: t_Subset_NatInner) -> [ &_10 <- _x ] s6)
       | s6 = [ &_4 <- { f0 = _10 } ] s7
-      | s7 = new_Nat {_4} (fun (_x: t_Nat) -> [ &_ret <- _x ] s8)
+      | s7 = new_Nat'0 {_4} (fun (_x: t_Nat) -> [ &_ret <- _x ] s8)
       | s8 = return {_ret} ] ]
     [ & _ret: t_Nat = Any.any_l ()
     | & s: t_Nat = s
@@ -11132,8 +11172,12 @@ module M_logic__int__impl_Plain_for_Positive__into_ghost (* <logic::int::Positiv
     [ return (result: t_Subset_PositiveInner) -> {[@stop_split] [@expl:new ensures] result = new_PositiveInner x}
       (! return {result}) ]
   
-  let new_Positive (x: t_Positive) (return (x'0: t_Positive)) = any
-    [ return (result: t_Positive) -> {[@stop_split] [@expl:new ensures] result = x} (! return {result}) ]
+  function new_Positive (x: t_Positive) : t_Positive
+  
+  axiom new_Positive_spec: forall x: t_Positive [new_Positive x]. new_Positive x = x
+  
+  let new_Positive'0 (x: t_Positive) (return (x'0: t_Positive)) = any
+    [ return (result: t_Positive) -> {[@stop_split] [@expl:new ensures] result = new_Positive x} (! return {result}) ]
   
   meta "compute_max_steps" 1000000
   
@@ -11148,7 +11192,7 @@ module M_logic__int__impl_Plain_for_Positive__into_ghost (* <logic::int::Positiv
       | s4 = [ &_11 <- { f0'0 = _12 } ] s5
       | s5 = new_PositiveInner'0 {_11} (fun (_x: t_Subset_PositiveInner) -> [ &_10 <- _x ] s6)
       | s6 = [ &_4 <- { f0 = _10 } ] s7
-      | s7 = new_Positive {_4} (fun (_x: t_Positive) -> [ &_ret <- _x ] s8)
+      | s7 = new_Positive'0 {_4} (fun (_x: t_Positive) -> [ &_ret <- _x ] s8)
       | s8 = return {_ret} ] ]
     [ & _ret: t_Positive = Any.any_l ()
     | & s: t_Positive = s
@@ -51340,12 +51384,16 @@ module M_logic__seq__impl_Plain_for_Seq_T__into_ghost (* <logic::seq::Seq<T> as 
   let add_Int (self: int) (other: int) (return (x: int)) = any
     [ return (result: int) -> {[@stop_split] [@expl:add ensures] result = self + other} (! return {result}) ]
   
-  let new_Seq_T (x: Seq.seq t_T) (return (x'0: Seq.seq t_T)) =
+  function new_Seq_T (x: Seq.seq t_T) : Seq.seq t_T
+  
+  axiom new_Seq_T_spec: forall x: Seq.seq t_T [new_Seq_T x]. new_Seq_T x = x
+  
+  let new_Seq_T'0 (x: Seq.seq t_T) (return (x'0: Seq.seq t_T)) =
   {[@stop_split] [@expl:new 'x' type invariant] inv_Seq_T x}
     any
     [ return (result: Seq.seq t_T) ->
     {[@stop_split] [@expl:new_Seq_T ensures] ([@stop_split] [@expl:new result type invariant] inv_Ghost_Seq_T result)
-      /\ ([@stop_split] [@expl:new ensures] result = x)}
+      /\ ([@stop_split] [@expl:new ensures] result = new_Seq_T x)}
       (! return {result}) ]
   
   meta "compute_max_steps" 1000000
@@ -51385,7 +51433,7 @@ module M_logic__seq__impl_Plain_for_Seq_T__into_ghost (* <logic::seq::Seq<T> as 
           | s7 = add_Int {i} {_45} (fun (_x: int) -> [ &_43 <- _x ] s8)
           | s8 = [ &i <- _43 ] s9
           | s9 = bb8 ] ] ]
-    | bb19 = s0 [ s0 = new_Seq_T {res} (fun (_x: Seq.seq t_T) -> [ &_ret <- _x ] s1) | s1 = return {_ret} ] ]
+    | bb19 = s0 [ s0 = new_Seq_T'0 {res} (fun (_x: Seq.seq t_T) -> [ &_ret <- _x ] s1) | s1 = return {_ret} ] ]
     [ & _ret: Seq.seq t_T = Any.any_l ()
     | & snap: Seq.seq t_T = snap
     | & res: Seq.seq t_T = Any.any_l ()
@@ -108434,12 +108482,16 @@ module M_std__option__impl_Plain_for_Option_T__into_ghost (* <std::option::Optio
   
   meta "rewrite_def" predicate inv_Ghost_Option_T
   
-  let new_Option_T (x: t_Option_T) (return (x'0: t_Option_T)) =
+  function new_Option_T (x: t_Option_T) : t_Option_T
+  
+  axiom new_Option_T_spec: forall x: t_Option_T [new_Option_T x]. new_Option_T x = x
+  
+  let new_Option_T'0 (x: t_Option_T) (return (x'0: t_Option_T)) =
   {[@stop_split] [@expl:new 'x' type invariant] inv_Option_T x}
     any
     [ return (result: t_Option_T) ->
     {[@stop_split] [@expl:new_Option_T ensures] ([@stop_split] [@expl:new result type invariant] inv_Ghost_Option_T result)
-      /\ ([@stop_split] [@expl:new ensures] result = x)}
+      /\ ([@stop_split] [@expl:new ensures] result = new_Option_T x)}
       (! return {result}) ]
   
   meta "compute_max_steps" 1000000
@@ -108459,7 +108511,7 @@ module M_std__option__impl_Plain_for_Option_T__into_ghost (* <std::option::Optio
       | s2 = deref_Ghost_T {_19} (fun (_x: t_T) -> [ &_17 <- _x ] s3)
       | s3 = [ &_4 <- Some _17 ] s4
       | s4 = bb9 ]
-    | bb9 = s0 [ s0 = new_Option_T {_4} (fun (_x: t_Option_T) -> [ &_ret <- _x ] s1) | s1 = return {_ret} ] ]
+    | bb9 = s0 [ s0 = new_Option_T'0 {_4} (fun (_x: t_Option_T) -> [ &_ret <- _x ] s1) | s1 = return {_ret} ] ]
     [ & _ret: t_Option_T = Any.any_l ()
     | & snap: t_Option_T = snap
     | & _4: t_Option_T = Any.any_l ()
@@ -114433,12 +114485,17 @@ module M_std__tuples__impl_Plain_for_tup10_C_B_A_Z_Y_X_W_V_U_T__into_ghost (* <(
   
   meta "rewrite_def" predicate inv_Ghost_tup10_C_B_A_Z_Y_X_W_V_U_T
   
-  let new_tup10_C_B_A_Z_Y_X_W_V_U_T (x: tup10_C_B_A_Z_Y_X_W_V_U_T) (return (x'0: tup10_C_B_A_Z_Y_X_W_V_U_T)) =
+  function new_tup10_C_B_A_Z_Y_X_W_V_U_T (x: tup10_C_B_A_Z_Y_X_W_V_U_T) : tup10_C_B_A_Z_Y_X_W_V_U_T
+  
+  axiom new_tup10_C_B_A_Z_Y_X_W_V_U_T_spec:
+    forall x: tup10_C_B_A_Z_Y_X_W_V_U_T [new_tup10_C_B_A_Z_Y_X_W_V_U_T x]. new_tup10_C_B_A_Z_Y_X_W_V_U_T x = x
+  
+  let new_tup10_C_B_A_Z_Y_X_W_V_U_T'0 (x: tup10_C_B_A_Z_Y_X_W_V_U_T) (return (x'0: tup10_C_B_A_Z_Y_X_W_V_U_T)) =
   {[@stop_split] [@expl:new 'x' type invariant] inv_tup10_C_B_A_Z_Y_X_W_V_U_T x}
     any
     [ return (result: tup10_C_B_A_Z_Y_X_W_V_U_T) ->
     {[@stop_split] [@expl:new_tup10_C_B_A_Z_Y_X_W_V_U_T ensures] ([@stop_split] [@expl:new result type invariant] inv_Ghost_tup10_C_B_A_Z_Y_X_W_V_U_T result)
-      /\ ([@stop_split] [@expl:new ensures] result = x)}
+      /\ ([@stop_split] [@expl:new ensures] result = new_tup10_C_B_A_Z_Y_X_W_V_U_T x)}
       (! return {result}) ]
   
   meta "compute_max_steps" 1000000
@@ -114488,7 +114545,7 @@ module M_std__tuples__impl_Plain_for_tup10_C_B_A_Z_Y_X_W_V_U_T__into_ghost (* <(
                          f7 = _65;
                          f8 = _73;
                          f9 = _81 } ] s31
-      | s31 = new_tup10_C_B_A_Z_Y_X_W_V_U_T {_4} (fun (_x: tup10_C_B_A_Z_Y_X_W_V_U_T) -> [ &_ret <- _x ] s32)
+      | s31 = new_tup10_C_B_A_Z_Y_X_W_V_U_T'0 {_4} (fun (_x: tup10_C_B_A_Z_Y_X_W_V_U_T) -> [ &_ret <- _x ] s32)
       | s32 = return {_ret} ] ]
     [ & _ret: tup10_C_B_A_Z_Y_X_W_V_U_T = Any.any_l ()
     | & snap: tup10_C_B_A_Z_Y_X_W_V_U_T = snap
@@ -115112,12 +115169,17 @@ module M_std__tuples__impl_Plain_for_tup11_D_C_B_A_Z_Y_X_W_V_U_T__into_ghost (* 
   
   meta "rewrite_def" predicate inv_Ghost_tup11_D_C_B_A_Z_Y_X_W_V_U_T
   
-  let new_tup11_D_C_B_A_Z_Y_X_W_V_U_T (x: tup11_D_C_B_A_Z_Y_X_W_V_U_T) (return (x'0: tup11_D_C_B_A_Z_Y_X_W_V_U_T)) =
+  function new_tup11_D_C_B_A_Z_Y_X_W_V_U_T (x: tup11_D_C_B_A_Z_Y_X_W_V_U_T) : tup11_D_C_B_A_Z_Y_X_W_V_U_T
+  
+  axiom new_tup11_D_C_B_A_Z_Y_X_W_V_U_T_spec:
+    forall x: tup11_D_C_B_A_Z_Y_X_W_V_U_T [new_tup11_D_C_B_A_Z_Y_X_W_V_U_T x]. new_tup11_D_C_B_A_Z_Y_X_W_V_U_T x = x
+  
+  let new_tup11_D_C_B_A_Z_Y_X_W_V_U_T'0 (x: tup11_D_C_B_A_Z_Y_X_W_V_U_T) (return (x'0: tup11_D_C_B_A_Z_Y_X_W_V_U_T)) =
   {[@stop_split] [@expl:new 'x' type invariant] inv_tup11_D_C_B_A_Z_Y_X_W_V_U_T x}
     any
     [ return (result: tup11_D_C_B_A_Z_Y_X_W_V_U_T) ->
     {[@stop_split] [@expl:new_tup11_D_C_B_A_Z_Y_X_W_V_U_T ensures] ([@stop_split] [@expl:new result type invariant] inv_Ghost_tup11_D_C_B_A_Z_Y_X_W_V_U_T result)
-      /\ ([@stop_split] [@expl:new ensures] result = x)}
+      /\ ([@stop_split] [@expl:new ensures] result = new_tup11_D_C_B_A_Z_Y_X_W_V_U_T x)}
       (! return {result}) ]
   
   meta "compute_max_steps" 1000000
@@ -115171,7 +115233,7 @@ module M_std__tuples__impl_Plain_for_tup11_D_C_B_A_Z_Y_X_W_V_U_T__into_ghost (* 
                          f8 = _73;
                          f9 = _81;
                          f10 = _89 } ] s34
-      | s34 = new_tup11_D_C_B_A_Z_Y_X_W_V_U_T {_4} (fun (_x: tup11_D_C_B_A_Z_Y_X_W_V_U_T) -> [ &_ret <- _x ] s35)
+      | s34 = new_tup11_D_C_B_A_Z_Y_X_W_V_U_T'0 {_4} (fun (_x: tup11_D_C_B_A_Z_Y_X_W_V_U_T) -> [ &_ret <- _x ] s35)
       | s35 = return {_ret} ] ]
     [ & _ret: tup11_D_C_B_A_Z_Y_X_W_V_U_T = Any.any_l ()
     | & snap: tup11_D_C_B_A_Z_Y_X_W_V_U_T = snap
@@ -115848,13 +115910,19 @@ module M_std__tuples__impl_Plain_for_tup12_E_D_C_B_A_Z_Y_X_W_V_U_T__into_ghost (
   
   meta "rewrite_def" predicate inv_Ghost_tup12_E_D_C_B_A_Z_Y_X_W_V_U_T
   
-  let new_tup12_E_D_C_B_A_Z_Y_X_W_V_U_T (x: tup12_E_D_C_B_A_Z_Y_X_W_V_U_T)
+  function new_tup12_E_D_C_B_A_Z_Y_X_W_V_U_T (x: tup12_E_D_C_B_A_Z_Y_X_W_V_U_T) : tup12_E_D_C_B_A_Z_Y_X_W_V_U_T
+  
+  axiom new_tup12_E_D_C_B_A_Z_Y_X_W_V_U_T_spec:
+    forall x: tup12_E_D_C_B_A_Z_Y_X_W_V_U_T [new_tup12_E_D_C_B_A_Z_Y_X_W_V_U_T x]. new_tup12_E_D_C_B_A_Z_Y_X_W_V_U_T x
+      = x
+  
+  let new_tup12_E_D_C_B_A_Z_Y_X_W_V_U_T'0 (x: tup12_E_D_C_B_A_Z_Y_X_W_V_U_T)
     (return (x'0: tup12_E_D_C_B_A_Z_Y_X_W_V_U_T)) =
   {[@stop_split] [@expl:new 'x' type invariant] inv_tup12_E_D_C_B_A_Z_Y_X_W_V_U_T x}
     any
     [ return (result: tup12_E_D_C_B_A_Z_Y_X_W_V_U_T) ->
     {[@stop_split] [@expl:new_tup12_E_D_C_B_A_Z_Y_X_W_V_U_T ensures] ([@stop_split] [@expl:new result type invariant] inv_Ghost_tup12_E_D_C_B_A_Z_Y_X_W_V_U_T result)
-      /\ ([@stop_split] [@expl:new ensures] result = x)}
+      /\ ([@stop_split] [@expl:new ensures] result = new_tup12_E_D_C_B_A_Z_Y_X_W_V_U_T x)}
       (! return {result}) ]
   
   meta "compute_max_steps" 1000000
@@ -115912,7 +115980,7 @@ module M_std__tuples__impl_Plain_for_tup12_E_D_C_B_A_Z_Y_X_W_V_U_T__into_ghost (
                          f9 = _81;
                          f10 = _89;
                          f11 = _97 } ] s37
-      | s37 = new_tup12_E_D_C_B_A_Z_Y_X_W_V_U_T {_4} (fun (_x: tup12_E_D_C_B_A_Z_Y_X_W_V_U_T) -> [ &_ret <- _x ] s38)
+      | s37 = new_tup12_E_D_C_B_A_Z_Y_X_W_V_U_T'0 {_4} (fun (_x: tup12_E_D_C_B_A_Z_Y_X_W_V_U_T) -> [ &_ret <- _x ] s38)
       | s38 = return {_ret} ] ]
     [ & _ret: tup12_E_D_C_B_A_Z_Y_X_W_V_U_T = Any.any_l ()
     | & snap: tup12_E_D_C_B_A_Z_Y_X_W_V_U_T = snap
@@ -116114,11 +116182,15 @@ module M_std__tuples__impl_Plain_for_tup1_T__into_ghost (* <(T,) as ghost::Plain
   
   meta "rewrite_def" predicate inv_Ghost_tup1_T
   
-  let new_tup1_T (x: t_T) (return (x'0: t_T)) = {[@stop_split] [@expl:new 'x' type invariant] inv_tup1_T x}
+  function new_tup1_T (x: t_T) : t_T
+  
+  axiom new_tup1_T_spec: forall x: t_T [new_tup1_T x]. new_tup1_T x = x
+  
+  let new_tup1_T'0 (x: t_T) (return (x'0: t_T)) = {[@stop_split] [@expl:new 'x' type invariant] inv_tup1_T x}
     any
     [ return (result: t_T) ->
     {[@stop_split] [@expl:new_tup1_T ensures] ([@stop_split] [@expl:new result type invariant] inv_Ghost_tup1_T result)
-      /\ ([@stop_split] [@expl:new ensures] result = x)}
+      /\ ([@stop_split] [@expl:new ensures] result = new_tup1_T x)}
       (! return {result}) ]
   
   meta "compute_max_steps" 1000000
@@ -116131,7 +116203,7 @@ module M_std__tuples__impl_Plain_for_tup1_T__into_ghost (* <(T,) as ghost::Plain
       | s1 = into_ghost_T {x} (fun (_x: t_T) -> [ &_11 <- _x ] s2)
       | s2 = deref_Ghost_T {_11} (fun (_x: t_T) -> [ &_9 <- _x ] s3)
       | s3 = [ &_4 <- _9 ] s4
-      | s4 = new_tup1_T {_4} (fun (_x: t_T) -> [ &_ret <- _x ] s5)
+      | s4 = new_tup1_T'0 {_4} (fun (_x: t_T) -> [ &_ret <- _x ] s5)
       | s5 = return {_ret} ] ]
     [ & _ret: t_T = Any.any_l ()
     | & snap: t_T = snap
@@ -116277,12 +116349,16 @@ module M_std__tuples__impl_Plain_for_tup2_U_T__into_ghost (* <(U, T) as ghost::P
   
   meta "rewrite_def" predicate inv_Ghost_tup2_U_T
   
-  let new_tup2_U_T (x: tup2_U_T) (return (x'0: tup2_U_T)) =
+  function new_tup2_U_T (x: tup2_U_T) : tup2_U_T
+  
+  axiom new_tup2_U_T_spec: forall x: tup2_U_T [new_tup2_U_T x]. new_tup2_U_T x = x
+  
+  let new_tup2_U_T'0 (x: tup2_U_T) (return (x'0: tup2_U_T)) =
   {[@stop_split] [@expl:new 'x' type invariant] inv_tup2_U_T x}
     any
     [ return (result: tup2_U_T) ->
     {[@stop_split] [@expl:new_tup2_U_T ensures] ([@stop_split] [@expl:new result type invariant] inv_Ghost_tup2_U_T result)
-      /\ ([@stop_split] [@expl:new ensures] result = x)}
+      /\ ([@stop_split] [@expl:new ensures] result = new_tup2_U_T x)}
       (! return {result}) ]
   
   meta "compute_max_steps" 1000000
@@ -116298,7 +116374,7 @@ module M_std__tuples__impl_Plain_for_tup2_U_T__into_ghost (* <(U, T) as ghost::P
       | s4 = into_ghost_T {x'0} (fun (_x: t_T) -> [ &_19 <- _x ] s5)
       | s5 = deref_Ghost_T {_19} (fun (_x: t_T) -> [ &_17 <- _x ] s6)
       | s6 = [ &_4 <- { f0 = _9; f1 = _17 } ] s7
-      | s7 = new_tup2_U_T {_4} (fun (_x: tup2_U_T) -> [ &_ret <- _x ] s8)
+      | s7 = new_tup2_U_T'0 {_4} (fun (_x: tup2_U_T) -> [ &_ret <- _x ] s8)
       | s8 = return {_ret} ] ]
     [ & _ret: tup2_U_T = Any.any_l ()
     | & snap: tup2_U_T = snap
@@ -116495,12 +116571,16 @@ module M_std__tuples__impl_Plain_for_tup3_V_U_T__into_ghost (* <(V, U, T) as gho
   
   meta "rewrite_def" predicate inv_Ghost_tup3_V_U_T
   
-  let new_tup3_V_U_T (x: tup3_V_U_T) (return (x'0: tup3_V_U_T)) =
+  function new_tup3_V_U_T (x: tup3_V_U_T) : tup3_V_U_T
+  
+  axiom new_tup3_V_U_T_spec: forall x: tup3_V_U_T [new_tup3_V_U_T x]. new_tup3_V_U_T x = x
+  
+  let new_tup3_V_U_T'0 (x: tup3_V_U_T) (return (x'0: tup3_V_U_T)) =
   {[@stop_split] [@expl:new 'x' type invariant] inv_tup3_V_U_T x}
     any
     [ return (result: tup3_V_U_T) ->
     {[@stop_split] [@expl:new_tup3_V_U_T ensures] ([@stop_split] [@expl:new result type invariant] inv_Ghost_tup3_V_U_T result)
-      /\ ([@stop_split] [@expl:new ensures] result = x)}
+      /\ ([@stop_split] [@expl:new ensures] result = new_tup3_V_U_T x)}
       (! return {result}) ]
   
   meta "compute_max_steps" 1000000
@@ -116519,7 +116599,7 @@ module M_std__tuples__impl_Plain_for_tup3_V_U_T__into_ghost (* <(V, U, T) as gho
       | s7 = into_ghost_T {x'1} (fun (_x: t_T) -> [ &_27 <- _x ] s8)
       | s8 = deref_Ghost_T {_27} (fun (_x: t_T) -> [ &_25 <- _x ] s9)
       | s9 = [ &_4 <- { f0 = _9; f1 = _17; f2 = _25 } ] s10
-      | s10 = new_tup3_V_U_T {_4} (fun (_x: tup3_V_U_T) -> [ &_ret <- _x ] s11)
+      | s10 = new_tup3_V_U_T'0 {_4} (fun (_x: tup3_V_U_T) -> [ &_ret <- _x ] s11)
       | s11 = return {_ret} ] ]
     [ & _ret: tup3_V_U_T = Any.any_l ()
     | & snap: tup3_V_U_T = snap
@@ -116766,12 +116846,16 @@ module M_std__tuples__impl_Plain_for_tup4_W_V_U_T__into_ghost (* <(W, V, U, T) a
   
   meta "rewrite_def" predicate inv_Ghost_tup4_W_V_U_T
   
-  let new_tup4_W_V_U_T (x: tup4_W_V_U_T) (return (x'0: tup4_W_V_U_T)) =
+  function new_tup4_W_V_U_T (x: tup4_W_V_U_T) : tup4_W_V_U_T
+  
+  axiom new_tup4_W_V_U_T_spec: forall x: tup4_W_V_U_T [new_tup4_W_V_U_T x]. new_tup4_W_V_U_T x = x
+  
+  let new_tup4_W_V_U_T'0 (x: tup4_W_V_U_T) (return (x'0: tup4_W_V_U_T)) =
   {[@stop_split] [@expl:new 'x' type invariant] inv_tup4_W_V_U_T x}
     any
     [ return (result: tup4_W_V_U_T) ->
     {[@stop_split] [@expl:new_tup4_W_V_U_T ensures] ([@stop_split] [@expl:new result type invariant] inv_Ghost_tup4_W_V_U_T result)
-      /\ ([@stop_split] [@expl:new ensures] result = x)}
+      /\ ([@stop_split] [@expl:new ensures] result = new_tup4_W_V_U_T x)}
       (! return {result}) ]
   
   meta "compute_max_steps" 1000000
@@ -116793,7 +116877,7 @@ module M_std__tuples__impl_Plain_for_tup4_W_V_U_T__into_ghost (* <(W, V, U, T) a
       | s10 = into_ghost_T {x'2} (fun (_x: t_T) -> [ &_35 <- _x ] s11)
       | s11 = deref_Ghost_T {_35} (fun (_x: t_T) -> [ &_33 <- _x ] s12)
       | s12 = [ &_4 <- { f0 = _9; f1 = _17; f2 = _25; f3 = _33 } ] s13
-      | s13 = new_tup4_W_V_U_T {_4} (fun (_x: tup4_W_V_U_T) -> [ &_ret <- _x ] s14)
+      | s13 = new_tup4_W_V_U_T'0 {_4} (fun (_x: tup4_W_V_U_T) -> [ &_ret <- _x ] s14)
       | s14 = return {_ret} ] ]
     [ & _ret: tup4_W_V_U_T = Any.any_l ()
     | & snap: tup4_W_V_U_T = snap
@@ -117090,12 +117174,16 @@ module M_std__tuples__impl_Plain_for_tup5_X_W_V_U_T__into_ghost (* <(X, W, V, U,
   
   meta "rewrite_def" predicate inv_Ghost_tup5_X_W_V_U_T
   
-  let new_tup5_X_W_V_U_T (x: tup5_X_W_V_U_T) (return (x'0: tup5_X_W_V_U_T)) =
+  function new_tup5_X_W_V_U_T (x: tup5_X_W_V_U_T) : tup5_X_W_V_U_T
+  
+  axiom new_tup5_X_W_V_U_T_spec: forall x: tup5_X_W_V_U_T [new_tup5_X_W_V_U_T x]. new_tup5_X_W_V_U_T x = x
+  
+  let new_tup5_X_W_V_U_T'0 (x: tup5_X_W_V_U_T) (return (x'0: tup5_X_W_V_U_T)) =
   {[@stop_split] [@expl:new 'x' type invariant] inv_tup5_X_W_V_U_T x}
     any
     [ return (result: tup5_X_W_V_U_T) ->
     {[@stop_split] [@expl:new_tup5_X_W_V_U_T ensures] ([@stop_split] [@expl:new result type invariant] inv_Ghost_tup5_X_W_V_U_T result)
-      /\ ([@stop_split] [@expl:new ensures] result = x)}
+      /\ ([@stop_split] [@expl:new ensures] result = new_tup5_X_W_V_U_T x)}
       (! return {result}) ]
   
   meta "compute_max_steps" 1000000
@@ -117120,7 +117208,7 @@ module M_std__tuples__impl_Plain_for_tup5_X_W_V_U_T__into_ghost (* <(X, W, V, U,
       | s13 = into_ghost_T {x'3} (fun (_x: t_T) -> [ &_43 <- _x ] s14)
       | s14 = deref_Ghost_T {_43} (fun (_x: t_T) -> [ &_41 <- _x ] s15)
       | s15 = [ &_4 <- { f0 = _9; f1 = _17; f2 = _25; f3 = _33; f4 = _41 } ] s16
-      | s16 = new_tup5_X_W_V_U_T {_4} (fun (_x: tup5_X_W_V_U_T) -> [ &_ret <- _x ] s17)
+      | s16 = new_tup5_X_W_V_U_T'0 {_4} (fun (_x: tup5_X_W_V_U_T) -> [ &_ret <- _x ] s17)
       | s17 = return {_ret} ] ]
     [ & _ret: tup5_X_W_V_U_T = Any.any_l ()
     | & snap: tup5_X_W_V_U_T = snap
@@ -117466,12 +117554,16 @@ module M_std__tuples__impl_Plain_for_tup6_Y_X_W_V_U_T__into_ghost (* <(Y, X, W, 
   
   meta "rewrite_def" predicate inv_Ghost_tup6_Y_X_W_V_U_T
   
-  let new_tup6_Y_X_W_V_U_T (x: tup6_Y_X_W_V_U_T) (return (x'0: tup6_Y_X_W_V_U_T)) =
+  function new_tup6_Y_X_W_V_U_T (x: tup6_Y_X_W_V_U_T) : tup6_Y_X_W_V_U_T
+  
+  axiom new_tup6_Y_X_W_V_U_T_spec: forall x: tup6_Y_X_W_V_U_T [new_tup6_Y_X_W_V_U_T x]. new_tup6_Y_X_W_V_U_T x = x
+  
+  let new_tup6_Y_X_W_V_U_T'0 (x: tup6_Y_X_W_V_U_T) (return (x'0: tup6_Y_X_W_V_U_T)) =
   {[@stop_split] [@expl:new 'x' type invariant] inv_tup6_Y_X_W_V_U_T x}
     any
     [ return (result: tup6_Y_X_W_V_U_T) ->
     {[@stop_split] [@expl:new_tup6_Y_X_W_V_U_T ensures] ([@stop_split] [@expl:new result type invariant] inv_Ghost_tup6_Y_X_W_V_U_T result)
-      /\ ([@stop_split] [@expl:new ensures] result = x)}
+      /\ ([@stop_split] [@expl:new ensures] result = new_tup6_Y_X_W_V_U_T x)}
       (! return {result}) ]
   
   meta "compute_max_steps" 1000000
@@ -117499,7 +117591,7 @@ module M_std__tuples__impl_Plain_for_tup6_Y_X_W_V_U_T__into_ghost (* <(Y, X, W, 
       | s16 = into_ghost_T {x'4} (fun (_x: t_T) -> [ &_51 <- _x ] s17)
       | s17 = deref_Ghost_T {_51} (fun (_x: t_T) -> [ &_49 <- _x ] s18)
       | s18 = [ &_4 <- { f0 = _9; f1 = _17; f2 = _25; f3 = _33; f4 = _41; f5 = _49 } ] s19
-      | s19 = new_tup6_Y_X_W_V_U_T {_4} (fun (_x: tup6_Y_X_W_V_U_T) -> [ &_ret <- _x ] s20)
+      | s19 = new_tup6_Y_X_W_V_U_T'0 {_4} (fun (_x: tup6_Y_X_W_V_U_T) -> [ &_ret <- _x ] s20)
       | s20 = return {_ret} ] ]
     [ & _ret: tup6_Y_X_W_V_U_T = Any.any_l ()
     | & snap: tup6_Y_X_W_V_U_T = snap
@@ -117896,12 +117988,17 @@ module M_std__tuples__impl_Plain_for_tup7_Z_Y_X_W_V_U_T__into_ghost (* <(Z, Y, X
   
   meta "rewrite_def" predicate inv_Ghost_tup7_Z_Y_X_W_V_U_T
   
-  let new_tup7_Z_Y_X_W_V_U_T (x: tup7_Z_Y_X_W_V_U_T) (return (x'0: tup7_Z_Y_X_W_V_U_T)) =
+  function new_tup7_Z_Y_X_W_V_U_T (x: tup7_Z_Y_X_W_V_U_T) : tup7_Z_Y_X_W_V_U_T
+  
+  axiom new_tup7_Z_Y_X_W_V_U_T_spec: forall x: tup7_Z_Y_X_W_V_U_T [new_tup7_Z_Y_X_W_V_U_T x]. new_tup7_Z_Y_X_W_V_U_T x
+      = x
+  
+  let new_tup7_Z_Y_X_W_V_U_T'0 (x: tup7_Z_Y_X_W_V_U_T) (return (x'0: tup7_Z_Y_X_W_V_U_T)) =
   {[@stop_split] [@expl:new 'x' type invariant] inv_tup7_Z_Y_X_W_V_U_T x}
     any
     [ return (result: tup7_Z_Y_X_W_V_U_T) ->
     {[@stop_split] [@expl:new_tup7_Z_Y_X_W_V_U_T ensures] ([@stop_split] [@expl:new result type invariant] inv_Ghost_tup7_Z_Y_X_W_V_U_T result)
-      /\ ([@stop_split] [@expl:new ensures] result = x)}
+      /\ ([@stop_split] [@expl:new ensures] result = new_tup7_Z_Y_X_W_V_U_T x)}
       (! return {result}) ]
   
   meta "compute_max_steps" 1000000
@@ -117932,7 +118029,7 @@ module M_std__tuples__impl_Plain_for_tup7_Z_Y_X_W_V_U_T__into_ghost (* <(Z, Y, X
       | s19 = into_ghost_T {x'5} (fun (_x: t_T) -> [ &_59 <- _x ] s20)
       | s20 = deref_Ghost_T {_59} (fun (_x: t_T) -> [ &_57 <- _x ] s21)
       | s21 = [ &_4 <- { f0 = _9; f1 = _17; f2 = _25; f3 = _33; f4 = _41; f5 = _49; f6 = _57 } ] s22
-      | s22 = new_tup7_Z_Y_X_W_V_U_T {_4} (fun (_x: tup7_Z_Y_X_W_V_U_T) -> [ &_ret <- _x ] s23)
+      | s22 = new_tup7_Z_Y_X_W_V_U_T'0 {_4} (fun (_x: tup7_Z_Y_X_W_V_U_T) -> [ &_ret <- _x ] s23)
       | s23 = return {_ret} ] ]
     [ & _ret: tup7_Z_Y_X_W_V_U_T = Any.any_l ()
     | & snap: tup7_Z_Y_X_W_V_U_T = snap
@@ -118380,12 +118477,17 @@ module M_std__tuples__impl_Plain_for_tup8_A_Z_Y_X_W_V_U_T__into_ghost (* <(A, Z,
   
   meta "rewrite_def" predicate inv_Ghost_tup8_A_Z_Y_X_W_V_U_T
   
-  let new_tup8_A_Z_Y_X_W_V_U_T (x: tup8_A_Z_Y_X_W_V_U_T) (return (x'0: tup8_A_Z_Y_X_W_V_U_T)) =
+  function new_tup8_A_Z_Y_X_W_V_U_T (x: tup8_A_Z_Y_X_W_V_U_T) : tup8_A_Z_Y_X_W_V_U_T
+  
+  axiom new_tup8_A_Z_Y_X_W_V_U_T_spec:
+    forall x: tup8_A_Z_Y_X_W_V_U_T [new_tup8_A_Z_Y_X_W_V_U_T x]. new_tup8_A_Z_Y_X_W_V_U_T x = x
+  
+  let new_tup8_A_Z_Y_X_W_V_U_T'0 (x: tup8_A_Z_Y_X_W_V_U_T) (return (x'0: tup8_A_Z_Y_X_W_V_U_T)) =
   {[@stop_split] [@expl:new 'x' type invariant] inv_tup8_A_Z_Y_X_W_V_U_T x}
     any
     [ return (result: tup8_A_Z_Y_X_W_V_U_T) ->
     {[@stop_split] [@expl:new_tup8_A_Z_Y_X_W_V_U_T ensures] ([@stop_split] [@expl:new result type invariant] inv_Ghost_tup8_A_Z_Y_X_W_V_U_T result)
-      /\ ([@stop_split] [@expl:new ensures] result = x)}
+      /\ ([@stop_split] [@expl:new ensures] result = new_tup8_A_Z_Y_X_W_V_U_T x)}
       (! return {result}) ]
   
   meta "compute_max_steps" 1000000
@@ -118419,7 +118521,7 @@ module M_std__tuples__impl_Plain_for_tup8_A_Z_Y_X_W_V_U_T__into_ghost (* <(A, Z,
       | s22 = into_ghost_T {x'6} (fun (_x: t_T) -> [ &_67 <- _x ] s23)
       | s23 = deref_Ghost_T {_67} (fun (_x: t_T) -> [ &_65 <- _x ] s24)
       | s24 = [ &_4 <- { f0 = _9; f1 = _17; f2 = _25; f3 = _33; f4 = _41; f5 = _49; f6 = _57; f7 = _65 } ] s25
-      | s25 = new_tup8_A_Z_Y_X_W_V_U_T {_4} (fun (_x: tup8_A_Z_Y_X_W_V_U_T) -> [ &_ret <- _x ] s26)
+      | s25 = new_tup8_A_Z_Y_X_W_V_U_T'0 {_4} (fun (_x: tup8_A_Z_Y_X_W_V_U_T) -> [ &_ret <- _x ] s26)
       | s26 = return {_ret} ] ]
     [ & _ret: tup8_A_Z_Y_X_W_V_U_T = Any.any_l ()
     | & snap: tup8_A_Z_Y_X_W_V_U_T = snap
@@ -118919,12 +119021,17 @@ module M_std__tuples__impl_Plain_for_tup9_B_A_Z_Y_X_W_V_U_T__into_ghost (* <(B, 
   
   meta "rewrite_def" predicate inv_Ghost_tup9_B_A_Z_Y_X_W_V_U_T
   
-  let new_tup9_B_A_Z_Y_X_W_V_U_T (x: tup9_B_A_Z_Y_X_W_V_U_T) (return (x'0: tup9_B_A_Z_Y_X_W_V_U_T)) =
+  function new_tup9_B_A_Z_Y_X_W_V_U_T (x: tup9_B_A_Z_Y_X_W_V_U_T) : tup9_B_A_Z_Y_X_W_V_U_T
+  
+  axiom new_tup9_B_A_Z_Y_X_W_V_U_T_spec:
+    forall x: tup9_B_A_Z_Y_X_W_V_U_T [new_tup9_B_A_Z_Y_X_W_V_U_T x]. new_tup9_B_A_Z_Y_X_W_V_U_T x = x
+  
+  let new_tup9_B_A_Z_Y_X_W_V_U_T'0 (x: tup9_B_A_Z_Y_X_W_V_U_T) (return (x'0: tup9_B_A_Z_Y_X_W_V_U_T)) =
   {[@stop_split] [@expl:new 'x' type invariant] inv_tup9_B_A_Z_Y_X_W_V_U_T x}
     any
     [ return (result: tup9_B_A_Z_Y_X_W_V_U_T) ->
     {[@stop_split] [@expl:new_tup9_B_A_Z_Y_X_W_V_U_T ensures] ([@stop_split] [@expl:new result type invariant] inv_Ghost_tup9_B_A_Z_Y_X_W_V_U_T result)
-      /\ ([@stop_split] [@expl:new ensures] result = x)}
+      /\ ([@stop_split] [@expl:new ensures] result = new_tup9_B_A_Z_Y_X_W_V_U_T x)}
       (! return {result}) ]
   
   meta "compute_max_steps" 1000000
@@ -118961,7 +119068,7 @@ module M_std__tuples__impl_Plain_for_tup9_B_A_Z_Y_X_W_V_U_T__into_ghost (* <(B, 
       | s25 = into_ghost_T {x'7} (fun (_x: t_T) -> [ &_75 <- _x ] s26)
       | s26 = deref_Ghost_T {_75} (fun (_x: t_T) -> [ &_73 <- _x ] s27)
       | s27 = [ &_4 <- { f0 = _9; f1 = _17; f2 = _25; f3 = _33; f4 = _41; f5 = _49; f6 = _57; f7 = _65; f8 = _73 } ] s28
-      | s28 = new_tup9_B_A_Z_Y_X_W_V_U_T {_4} (fun (_x: tup9_B_A_Z_Y_X_W_V_U_T) -> [ &_ret <- _x ] s29)
+      | s28 = new_tup9_B_A_Z_Y_X_W_V_U_T'0 {_4} (fun (_x: tup9_B_A_Z_Y_X_W_V_U_T) -> [ &_ret <- _x ] s29)
       | s29 = return {_ret} ] ]
     [ & _ret: tup9_B_A_Z_Y_X_W_V_U_T = Any.any_l ()
     | & snap: tup9_B_A_Z_Y_X_W_V_U_T = snap
