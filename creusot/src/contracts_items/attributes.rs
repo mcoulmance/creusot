@@ -312,7 +312,7 @@ fn get_attr<'tcx>(tcx: TyCtxt<'tcx>, def_id: DefId, path: &[&str]) -> Option<&'t
     }
 }
 
-pub(crate) fn has_logic_alias(ctx: &mut TranslationCtx, def_id: DefId) -> Option<(Span, DefId)> {
+pub(crate) fn has_logic_alias(ctx: &TranslationCtx, def_id: DefId) -> Option<(Span, DefId)> {
     let attrs = get_attrs(ctx.tcx(), def_id, &["creusot", "decl", "logic_alias"]);
     let attr = match attrs.as_slice() {
         [] => return None,
