@@ -1,4 +1,4 @@
-error: Aliasing a program function to a trait method is incorrect
+error: A program function can only be aliased by another program function.
   --> function_aliased_to_trait.rs:17:1
    |
 17 | #[logic_alias(S::is_zero(x@))]

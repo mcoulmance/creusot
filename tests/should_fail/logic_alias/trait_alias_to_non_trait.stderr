@@ -1,4 +1,4 @@
-error: Aliasing trait method with non-trait method is incorrect
+error: Cannot use #[logic_alias] in this context, because type S does not implement trait T.
   --> trait_alias_to_non_trait.rs:17:5
    |
 17 |     #[logic_alias(S::is_zero(x@))]
