@@ -181,7 +181,7 @@ pub struct TranslationCtx<'tcx> {
     pub(crate) variant_calls: RefCell<IndexMap<DefId, IndexSet<DefId>>>,
     erasure_required: RefCell<IndexSet<DefId>>,
     extern_specs: HashMap<DefId, ExternSpec<'tcx>>,
-    extern_spec_items: HashMap<LocalDefId, DefId>,
+    extern_spec_items: HashMap<DefId, DefId>,
     trusted_positivity: HashMap<DefId, TrustedPositivity>,
     erased_local_defid: HashMap<LocalDefId, Option<Erasure<'tcx>>>,
     erasures_to_check: IndexSet<LocalDefId>,
@@ -478,6 +478,10 @@ impl<'tcx> TranslationCtx<'tcx> {
         self.extern_specs.get(&def_id).or_else(|| self.externs.extern_spec(def_id))
     }
 
+    pub(crate) fn extern_spec_items(&self, def_id: DefId) -> Option<DefId> {
+        self.extern_spec_items.get(&def_id).copied()
+    }
+
     pub(crate) fn trusted_positivity(&self, def_id: DefId, index: usize) -> bool {
         let Some(tp) = self.get_trusted_positivity(def_id) else {
             return false;
@@ -665,7 +669,7 @@ impl<'tcx> TranslationCtx<'tcx> {
 
                 let _ = self.extern_specs.insert(i, es);
 
-                self.extern_spec_items.insert(def_id, i);
+                self.extern_spec_items.insert(def_id.to_def_id(), i);
             }
         }
 
