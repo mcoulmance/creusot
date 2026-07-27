@@ -293,6 +293,7 @@ impl<'a, 'tcx> Visitor<'a, 'tcx> for PurityVisitor<'a, 'tcx> {
                             .unwrap();
 
                     let fn_purity = self.purity(func_did, args);
+                    let base_purity = fn_purity; // backup to get more consistent error messages
                     let fn_purity = match self.ctx.logic_alias(func_did) {
                         Some((_, alias_id)) if !self.context.can_call(fn_purity) => {
                             self.purity(logic_alias::get_logic_id(self.ctx, alias_id), args)
@@ -311,7 +312,7 @@ impl<'a, 'tcx> Visitor<'a, 'tcx> for PurityVisitor<'a, 'tcx> {
                     {
                     } else if !self.context.can_call(fn_purity) {
                         // Emit a nicer error specifically for calls of ghost functions.
-                        if fn_purity == Purity::Ghost && self.context.is_program() {
+                        if base_purity == Purity::Ghost && self.context.is_program() {
                             match self.ctx.intrinsic(func_did) {
                                 Intrinsic::GhostIntoInner => self
                                     .error(expr.span, "trying to access the contents of a ghost variable in program context").emit(),
@@ -339,7 +340,7 @@ impl<'a, 'tcx> Visitor<'a, 'tcx> for PurityVisitor<'a, 'tcx> {
                                 _ => unreachable!(),
                             };
                         } else {
-                            let (caller, callee) = match (self.context, fn_purity) {
+                            let (caller, callee) = match (self.context, base_purity) {
                                 (
                                     LocalPurity::Purity(Purity::Program { .. } | Purity::Ghost),
                                     Purity::Logic { .. },
