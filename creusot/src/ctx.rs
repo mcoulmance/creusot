@@ -385,7 +385,7 @@ impl<'tcx> TranslationCtx<'tcx> {
     /// For any other purpose you probably want to use `Self::term` instead.
     pub(crate) fn raw_term<'a>(&'a self, def_id: DefId) -> Option<&'a Scoped<Term<'tcx>>> {
         let Some(local_id) = def_id.as_local() else {
-            return self.externs.term(def_id);
+            return self.externs.raw_term(def_id);
         };
 
         self.raw_terms
@@ -563,6 +563,7 @@ impl<'tcx> TranslationCtx<'tcx> {
         BinaryMetadata::from_parts(
             self.terms,
             self.terms_with_triggers,
+            self.raw_terms,
             self.creusot_items,
             self.raw_intrinsics,
             self.extern_specs,
@@ -570,6 +571,7 @@ impl<'tcx> TranslationCtx<'tcx> {
             self.params_open_inv,
             erased_thir,
             self.erased_local_defid,
+            self.logic_aliases,
         )
     }
 
@@ -578,7 +580,10 @@ impl<'tcx> TranslationCtx<'tcx> {
     }
 
     pub(crate) fn logic_alias(&self, def_id: DefId) -> Option<(Span, DefId)> {
-        self.logic_aliases.get(&def_id).copied()
+        self.logic_aliases
+            .get(&def_id)
+            .copied()
+            .or_else(|| self.externs.logic_alias(def_id).copied())
     }
 
     pub(crate) fn param_env(&self, def_id: DefId) -> ParamEnv<'tcx> {
@@ -768,6 +773,10 @@ impl<'tcx> TranslationCtx<'tcx> {
                 );
                 logic_alias::check_validity(self, def_id, alias.1, alias.0);
                 self.logic_aliases.insert(def_id, alias);
+
+                if let Some(real_id) = self.extern_spec_items(def_id) {
+                    self.logic_aliases.insert(real_id, alias);
+                }
             } else if let Some(trait_id) = self.tcx.trait_item_of(def_id)
                 && let Some(alias) = has_logic_alias(self, trait_id)
             {
