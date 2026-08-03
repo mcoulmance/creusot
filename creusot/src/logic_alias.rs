@@ -53,7 +53,7 @@ where
                     let helper_subst = |mut term: Term<'tcx>| {
                         term = ctx.normalize_erasing_regions(
                             typing_env,
-                            EarlyBinder::bind(/* self.tcx */ term).instantiate(ctx.tcx, prog_subst),
+                            EarlyBinder::bind(ctx.tcx, term).instantiate(ctx.tcx, prog_subst),
                         );
                         term.subst(&args_subst);
                         term
@@ -61,8 +61,7 @@ where
 
                     let call_subst = ctx.normalize_erasing_regions(
                         typing_env,
-                        EarlyBinder::bind(/* self.tcx */ *call_subst)
-                            .instantiate(ctx.tcx, prog_subst),
+                        EarlyBinder::bind(ctx.tcx, *call_subst).instantiate(ctx.tcx, prog_subst),
                     );
 
                     let res_args = args.iter().map(|term| helper_subst(term.clone())).collect();

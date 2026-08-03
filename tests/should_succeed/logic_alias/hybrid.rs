@@ -3,7 +3,6 @@
 extern crate creusot_std;
 use creusot_std::prelude::*;
 
-
 #[hybrid]
 #[requires(x@ < i64::MAX@ - 1)]
 #[ensures(result@ == x@ + 1)]
@@ -16,7 +15,6 @@ pub fn add_one(x: i64) -> i64 {
 pub fn add_two(x: i64) -> i64 {
     add_one(x) + 1
 }
-
 
 pub trait IsZero {
     #[hybrid]
@@ -36,7 +34,6 @@ impl IsZero for i64 {
         *self == 0i64
     }
 }
-
 
 #[ensures(result == x.is_zero() || y.is_zero())]
 pub fn are_zeros(x: i32, y: i64) -> bool {
@@ -68,8 +65,10 @@ pub fn no_zeros<T: IsZero>(elems: &[T]) -> bool {
     true
 }
 
-
-trait IsOne where Self: View<ViewTy=Int> {
+trait IsOne
+where
+    Self: View<ViewTy = Int>,
+{
     #[hybrid]
     #[ensures(result == (self@ == 1))]
     fn is_one(&self) -> bool;
@@ -84,7 +83,7 @@ macro_rules! impl_is_one {
                 *self == $one
             }
         }
-    }
+    };
 }
 
 impl_is_one!(i8, 1i8);
@@ -92,12 +91,10 @@ impl_is_one!(i16, 1i16);
 impl_is_one!(i32, 1i32);
 impl_is_one!(i64, 1i64);
 
-
 impl_is_one!(u8, 1u8);
 impl_is_one!(u16, 1u16);
 impl_is_one!(u32, 1u32);
 impl_is_one!(u64, 1u64);
-
 
 #[ensures(result == forall<i> 0 <= i && i < elems@.len() ==> elems@[i].is_one())]
 fn all_ones<T: View<ViewTy = Int> + IsOne>(elems: &[T]) -> bool {
@@ -118,7 +115,7 @@ macro_rules! check_trait_select {
         fn $name(elems: &[$from]) -> Vec<$to> {
             elems.iter().map(|i| *i as $to).collect()
         }
-    }
+    };
 }
 
 check_trait_select!(dummy_cast1, u8, i8);
