@@ -124,13 +124,14 @@ fn failwith(
  * |-------------------+-------------------+----------------------------------------------------|
  * |  trait            |   trait           |    valid if in the same trait                      |
  * |-------------------+-------------------+----------------------------------------------------|
- * |  trait            |   impl type       |    valid if `type` also implement `trait`          |
+ * |  trait            |   impl type       |    valid if `type` also implement `trait`  ?       |
  * |-------------------+-------------------+----------------------------------------------------|
- * |  trait            |   impl trait      |    valid if it's the same trait                    |
+ * |  trait            |   impl trait      |    invalid                                         |
  * |-------------------+-------------------+----------------------------------------------------|
  * |  impl type        |   fun             |    valid if `fun` comes from the current crate     |
  * |-------------------+-------------------+----------------------------------------------------|
- * |  impl type        |   trait           |    valid if `type` implements `trait`              |
+ * |  impl type        |   trait           |    valid if `type` implements `trait` and          |
+ * |                   |                   |    logic function is sealed ?                      |
  * |-------------------+-------------------+----------------------------------------------------|
  * |  impl type        |   impl type       |    valid if it's the same type (*)                 |
  * |-------------------+-------------------+----------------------------------------------------|
@@ -138,15 +139,16 @@ fn failwith(
  * |-------------------+-------------------+----------------------------------------------------|
  * |  impl trait       |   fun             |    valid if `fun` comes from the current crate     |
  * |-------------------+-------------------+----------------------------------------------------|
- * |  impl trait       |   trait           |    valid if it's the same trait                    |
+ * |  impl trait       |   trait           |    valid if it's the same trait (**)               |
  * |-------------------+-------------------+----------------------------------------------------|
  * |  impl trait       |   impl type       |    valid if `type` implements `trait`              |
  * |-------------------+-------------------+----------------------------------------------------|
- * |  impl trait       |   impl trait      |    valid if it's the same trait                    |
+ * |  impl trait       |   impl trait      |    valid if it's the same trait (**)               |
  * +-------------------+-------------------+----------------------------------------------------+
  *
  * (*) I'm not sure if this is really a big deal to have aliasing between methods from two
  * different types. Maybe we could to allow it as long as the signatures match?
+ * (**) Do we really want this ? Do we want to go even further ?
  */
 pub(crate) fn check_validity(
     ctx: &TranslationCtx,
